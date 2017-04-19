@@ -1,7 +1,6 @@
+import sys, math, time
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
-import math
 from random import shuffle
 
 letters = ['A','B','C','D','E','F','G','H','I']
@@ -47,6 +46,8 @@ class SudoSolver:
         for xi in self.vars:
             self.AddArcs(xi)
 
+        self.start = time.time()
+
     # AC3 Solve
     def AC3Solve(self):
         # While there are remaining arcs
@@ -70,12 +71,15 @@ class SudoSolver:
         return revised
 
     def AddArcs(self,xi,xjx=None):
+        # Add row arcs
         for xj in self.GetRow(xi):
             if xi!=xj and xj!=xjx:
                 self.arcs.append([xi,xj])
+        # Add col arcs
         for xj in self.GetCol(xi):
             if xi!=xj and xj!=xjx:
                 self.arcs.append([xi,xj])
+        # Add sqr arcs
         for xj in self.GetSqu(xi):
             if xi!=xj and xj!=xjx:
                 self.arcs.append([xi,xj])
@@ -84,12 +88,12 @@ class SudoSolver:
     def BacktrackSolve(self, currGrid, row=0, col=0):
         # Get next var and check completeness
         coord = self.GetUnassignedCoord(currGrid, row, col)
+        if not coord:
+            return True
         row = coord[0]
         col = coord[1]
-        if row==-1:
-            return True
-        # Iterate through ALL possible values
-        for val in range(1,10):
+        # Iterate through possible values
+        for val in self.GetDomainValues(currGrid,row,col):
             if self.IsConsistent(currGrid,row,col,val):
                 # Add { var = currGrid[row][col] = val }
                 currGrid[row][col] = val
@@ -160,17 +164,46 @@ class SudoSolver:
         return gridstr
 
     def GetUnassignedCoord(self, grid, currRow, currCol):
-        # Iterate thru undiscovered
-        for i in range(currRow,self.dim):
-            for j in range(currCol,self.dim):
-                if grid[i][j]==0:
-                    return (i,j)
-        # Iterate thru ALL
-        for i in range(0,self.dim):
-            for j in range(0,self.dim):
-                if grid[i][j]==0:
-                    return (i,j)
-        return (-1,-1)
+        minlen = 11
+        mincoord = (0,0)
+        for xr in range(currRow,self.dim):
+            for xc in range(currCol,self.dim):
+                if grid[xr][xc]==0:
+                    doms = self.GetDomainValues(grid,xr,xc)
+                    domlen = len(doms)
+                    if len(doms)>1 and len(doms)<minlen:
+                        minlen = domlen
+                        mincoord = (xr,xc)
+                    return (xr,xc)
+        for xr in range(0,self.dim):
+            for xc in range(0,self.dim):
+                if grid[xr][xc]==0:
+                    doms = self.GetDomainValues(grid,xr,xc)
+                    domlen = len(doms)
+                    if len(doms)>1 and len(doms)<minlen:
+                        minlen = domlen
+                        mincoord = (xr,xc)
+                    return (xr,xc)
+        return []
+
+    def GetDomainValues(self, grid, r, c):
+        dom = range(1,10)
+        for xr in range(0,self.dim):
+            if grid[xr][c] in dom:
+                dom.remove(grid[xr][c])
+        for xc in range(0,self.dim):
+            if grid[r][xc] in dom:
+                dom.remove(grid[r][xc])
+        sqrX = self.sqrdim*(r/self.sqrdim)
+        sqrY = self.sqrdim*(c/self.sqrdim)
+        for xsr in range(sqrX, sqrX+self.sqrdim):
+            for xsc in range(sqrY, sqrY+self.sqrdim):
+                if grid[xsr][xsc] in dom:
+                    dom.remove(grid[xsr][xsc])
+        return dom
+
+    def GetStart(self):
+        return self.start
 
     # Utility Functions
     def PrintDomains(self):
@@ -224,6 +257,8 @@ if __name__ == '__main__':
     grid = ss.GetGrid(sys.argv[1])
     with open('output.txt', 'a') as f:
         if ss.BacktrackSolve(grid):
+            #print(time.time()-ss.GetStart())
             f.write(ss.GetGridStr(grid)+'\n')
         else:
+            #print(time.time()-ss.GetStart())
             f.write('\n')

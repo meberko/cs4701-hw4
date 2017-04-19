@@ -6,3 +6,5 @@
 My pure AC-3 Algorithm was about to solve exactly 1 sudoku of the 400 provided.
 This is expected behavior because only a very specific subset of sudokus are
 able to be solved with pure inference (i.e. how AC-3 operates).
+Once I implemented Backtracking, I was able to solve all of the puzzles provided;
+however, there were 1 or 2 which ran for slightly longer than 1 minute.
