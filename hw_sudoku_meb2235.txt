@@ -1,0 +1,8 @@
+********************************************************************************
+*              Artificial Intelligence (COMS W4701) Assignment 4               *
+*                          Michael Berkowitz (meb2235)                         *
+********************************************************************************
+
+My pure AC-3 Algorithm was about to solve exactly 1 sudoku of the 400 provided.
+This is expected behavior because only a very specific subset of sudokus are
+able to be solved with pure inference (i.e. how AC-3 operates).
